@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Get Map Coordinates</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/3.18/dijit/themes/tundra/tundra.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.18/esri/css/esri.css">
+    <style>
+        html,
+        body,
+        #mapDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+        }
+
+        #messages {
+            background-color: #fff;
+            box-shadow: 0 0 5px #888;
+            font-size: 1.1em;
+            max-width: 15em;
+            padding: 0.5em;
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            z-index: 40;
+        }
+    </style>
+    <script src="https://js.arcgis.com/3.18/"></script>
+    <script>
+        var map;
+        require([
+            "esri/map", "esri/geometry/webMercatorUtils",
+            "esri/graphic", "esri/InfoTemplate", "esri/symbols/SimpleMarkerSymbol",
+            "esri/symbols/SimpleLineSymbol", "esri/Color", "dojo/dom", "dojo/domReady!"
+        ], function(
+            Map, webMercatorUtils,
+            Graphic, InfoTemplate, SimpleMarkerSymbol,
+            SimpleLineSymbol, Color, dom
+        ) {
+
+
+            map = new Map("mapDiv", {
+                basemap: "streets",
+                center: [-122.3, 47.6],
+                zoom: 14,
+                slider: false
+            });
+
+            // selection symbol used to draw the selected census block points within the buffer polygon
+            var symbol = new SimpleMarkerSymbol(
+                SimpleMarkerSymbol.STYLE_CIRCLE,
+                12,
+                new SimpleLineSymbol(
+                    SimpleLineSymbol.STYLE_NULL,
+                    new Color([247, 34, 101, 0.9]),
+                    1
+                ),
+                new Color([207, 34, 171, 0.5])
+            );
+
+            //when the map is clicked create a buffer around the click point of the specified distance.
+            map.on("click", function(evt) {
+                var mp = webMercatorUtils.webMercatorToGeographic(evt.mapPoint);
+                map.graphics.clear();
+                map.graphics.add(new Graphic(evt.mapPoint));
+                map.infoWindow.setContent("Longitude: " + mp.x.toString() + ", <br>Latitude: " + mp.y.toString());
+                map.infoWindow.show(evt.mapPoint)
+            });
+
+        });
+    </script>
+</head>
+
+<body>
+    <span id="messages">Click on the map to get the coordinates.</span>
+    <div id="mapDiv"></div>
+</body>
+
+</html>
